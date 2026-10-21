@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E7672">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stillwater">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Stillwater</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: single phone-width column, fixed bottom tab bar, floating calm button always in reach */
+:root{
+  --bg:#EDF1EF; --surface:#FFFFFF; --sunk:#E2E8E5; --ink:#1D2A2C; --muted:#5B6B6C; --line:#CDD7D3;
+  --calm:#2E7672; --calm-soft:#D3E6E2; --gold:#A8741F; --gold-soft:#F2E6CF;
+  --alert:#B3261E; --alert-soft:#F9DEDA; --ok:#2F7D46;
+  --u1:#C0392B; --u1s:#F7D9D4; --u2:#B07A1A; --u2s:#F4E4C1; --u3:#2E7672; --u3s:#D0E6E1; --u4:#5E7390; --u4s:#DFE6EF;
+  --display:"Literata", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121A1C; --surface:#1A2427; --sunk:#0E1517; --ink:#E4ECEA; --muted:#93A4A3; --line:#2C3A3D;
+  --calm:#6DBDB6; --calm-soft:#1E3836; --gold:#E0B460; --gold-soft:#33291A;
+  --alert:#FF8A80; --alert-soft:#3C1E1C; --ok:#7ACB91; --u1:#FF8A80; --u1s:#3E211F; --u2:#E0B460; --u2s:#3A2E17; --u3:#6DBDB6; --u3s:#1C3634; --u4:#9FB2C9; --u4s:#232D3A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121A1C; --surface:#1A2427; --sunk:#0E1517; --ink:#E4ECEA; --muted:#93A4A3; --line:#2C3A3D;
+  --calm:#6DBDB6; --calm-soft:#1E3836; --gold:#E0B460; --gold-soft:#33291A;
+  --alert:#FF8A80; --alert-soft:#3C1E1C; --ok:#7ACB91; --u1:#FF8A80; --u1s:#3E211F; --u2:#E0B460; --u2s:#3A2E17; --u3:#6DBDB6; --u3s:#1C3634; --u4:#9FB2C9; --u4s:#232D3A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 120px}
+.app{max-width:560px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:1.75rem;line-height:1.2}
+h2{font-size:1.2rem}
+h3{font-size:1rem;font-family:var(--body);font-weight:600}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header.top{padding-block:22px 6px;display:flex;flex-direction:column;gap:4px}
+section.view{display:flex;flex-direction:column;gap:18px;padding-top:10px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel.quiet{background:transparent;border-style:dashed}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--calm);outline-offset:2px}
+button.primary{background:var(--calm);border-color:var(--calm);color:var(--bg)}
+button.ghost{background:transparent}
+button.danger{color:var(--alert)}
+button.small{padding:4px 10px;font-size:.85rem}
+input[type=text],input[type=datetime-local],input[type=number],input[type=time],input[type=date],textarea,select{width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:140px;resize:vertical;line-height:1.6}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);font-weight:500;flex:1;min-width:140px}
+
+/* tasks */
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.task:first-of-type{border-top:0}
+.task .t{font-weight:600;overflow-wrap:anywhere}
+.task .n{font-size:.88rem;color:var(--muted);overflow-wrap:anywhere}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+.when{font-size:.8rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.chip.over{background:var(--alert-soft);color:var(--alert)}
+.chip.soon{background:var(--gold-soft);color:var(--gold)}
+.chip.date{background:var(--calm-soft);color:var(--calm)}
+.check{width:22px;height:22px;border-radius:7px;border:2px solid var(--calm);background:transparent;padding:0;margin-top:2px}
+.check.on{background:var(--calm)}
+.check.on::after{content:"";display:block;width:6px;height:11px;border:solid var(--bg);border-width:0 2px 2px 0;transform:translate(6px,1px) rotate(45deg)}
+
+/* mood */
+.moods{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.moods button{border-radius:10px;padding:10px 2px;font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:6px}
+.moods button i{width:14px;height:14px;border-radius:50%;display:block}
+.moods button.on{border-color:var(--calm);background:var(--calm-soft)}
+
+/* verse */
+.verse{background:var(--gold-soft);border:0}
+.verse p{font-family:var(--display);font-size:1.08rem;line-height:1.55;margin:0}
+.verse cite{font-style:normal;font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.04em}
+
+/* breathing */
+.breather{display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 0}
+.orb-wrap{width:220px;height:220px;max-width:100%;display:grid;place-items:center;position:relative}
+.orb-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--line)}
+.orb{width:220px;height:220px;max-width:100%;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--calm-soft),var(--calm));transform:scale(.45);transition-property:transform;transition-timing-function:ease-in-out}
+.phase{font-family:var(--display);font-size:1.4rem}
+.count{font-variant-numeric:tabular-nums;color:var(--muted)}
+
+/* grounding */
+.ground-step{font-family:var(--display);font-size:1.25rem}
+.dots{display:flex;gap:6px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--calm)}
+
+/* journal */
+.entry{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.entry p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.prompt{font-family:var(--display);font-size:1.05rem;color:var(--calm)}
+
+/* focus */
+.timer{font-family:var(--display);font-size:4rem;line-height:1;font-variant-numeric:tabular-nums;text-align:center}
+.bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--calm);width:0}
+
+/* habits */
+.habit{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.habit:first-of-type{border-top:0}
+.week{display:flex;gap:4px}
+.week i{width:9px;height:9px;border-radius:2px;background:var(--sunk);border:1px solid var(--line)}
+.week i.on{background:var(--ok);border-color:var(--ok)}
+.counter{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.counter button{width:32px;height:32px;padding:0}
+
+/* faith */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.gallery figure{margin:0;position:relative;border-radius:12px;overflow:hidden;background:var(--sunk);aspect-ratio:3/4;max-width:100%}
+.gallery img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery figure button{position:absolute;top:6px;right:6px;background:var(--surface)}
+.gallery figure .pin{left:6px;right:auto}
+.gallery figure.pinned{outline:3px solid var(--gold)}
+
+/* more menu */
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{border-radius:var(--r);text-align:left;padding:16px;display:flex;flex-direction:column;gap:4px;font-weight:400;min-height:96px}
+.menu button b{font-family:var(--display);font-size:1.05rem;font-weight:600}
+.menu button span{font-size:.82rem;color:var(--muted)}
+
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+nav.tabs button{border:0;border-radius:0;background:transparent;padding:10px 2px 12px;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button.on{color:var(--calm)}
+.sos{position:fixed;z-index:21;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px));
+  width:60px;height:60px;border-radius:50%;padding:0;background:var(--calm);border:3px solid var(--bg);color:var(--bg);font-size:.72rem;font-weight:700;letter-spacing:.05em;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;
+  padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.overlay .in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.panic-img{width:100%;max-width:100%;max-height:260px;object-fit:cover;border-radius:var(--r)}
+.alarm{background:var(--alert-soft)}
+.alarm .in{align-items:stretch;text-align:center;padding-top:8vh}
+.alarm h1{font-size:2.2rem;color:var(--alert)}
+.alarm .big{font-family:var(--display);font-size:1.5rem}
+.alarm.shake .in{animation:shake .5s ease-in-out infinite}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:.9rem;max-width:calc(100% - 32px)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--alert-soft);padding:10px;border-radius:10px}
+.help{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.help b{color:var(--ink);user-select:all}
+/* dates: calendar + countdowns */
+.u1{--uC:var(--u1);--uS:var(--u1s)} .u2{--uC:var(--u2);--uS:var(--u2s)} .u3{--uC:var(--u3);--uS:var(--u3s)} .u4{--uC:var(--u4);--uS:var(--u4s)}
+.cal-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .dow{font-size:.68rem;text-align:center;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding-bottom:2px}
+.cal button.day{aspect-ratio:1;max-width:100%;border-radius:10px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums;font-size:.88rem;border:1.5px solid transparent;background:var(--sunk);min-width:0}
+.cal .day.out{opacity:.35}
+.cal .day.past{color:var(--muted)}
+.cal .day.has{background:var(--uS);color:var(--uC)}
+.cal .day.today{border-color:var(--ink)}
+.cal .day.sel{outline:2px solid var(--calm);outline-offset:1px}
+.pips{display:flex;gap:2px;min-height:6px}
+.pips i{width:6px;height:6px;border-radius:50%;background:var(--uC)}
+.pips i.star{border-radius:1px;transform:rotate(45deg)}
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+.legend span{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--uS);color:var(--uC)}
+.cd{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;padding:12px;border-radius:12px;background:var(--uS)}
+.cd .num{font-family:var(--display);font-size:2.1rem;line-height:1;text-align:center;color:var(--uC);font-variant-numeric:tabular-nums}
+.cd .num.word{font-size:1.25rem}
+.cd .num small{display:block;font-family:var(--body);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.cd .t{font-weight:600;overflow-wrap:anywhere}
+.meter{height:6px;border-radius:3px;background:var(--surface);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--uC)}
+/* insights */
+.ins{display:grid;grid-template-columns:64px repeat(14,minmax(14px,1fr));gap:4px;align-items:center;min-width:330px}
+.ins .lab{font-size:.75rem;color:var(--muted);font-weight:600}
+.ins .dl{font-size:.65rem;text-align:center;color:var(--muted)}
+.ins i{display:block;aspect-ratio:1;border-radius:4px;border:1px solid var(--line);background:transparent}
+.ins i.on{background:var(--ok);border-color:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.stat{background:var(--sunk);border-radius:10px;padding:10px}
+.stat b{display:block;font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:.8rem;color:var(--muted)}
+a.pill{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink);text-decoration:none;font-weight:600;font-size:.85rem}
+@media (prefers-reduced-motion: reduce){.orb{transition-duration:0s!important}.alarm.shake .in{animation:none}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<button class="sos" id="sosBtn" aria-label="Open calm screen">CALM</button>
+
+<nav class="tabs" aria-label="Main">
+  <div class="in">
+    <button data-tab="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Today</button>
+    <button data-tab="tasks"><svg viewBox="0 0 24 24"><path d="M4 6l2 2 3-3M4 13l2 2 3-3M12 7h8M12 14h8M4 20h16"/></svg>Tasks</button>
+    <button data-tab="dates"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><rect x="7" y="13" width="4" height="4" rx="1"/></svg>Dates</button>
+    <button data-tab="calm"><svg viewBox="0 0 24 24"><path d="M3 12c3-4 6-4 9 0s6 4 9 0"/><path d="M3 17c3-4 6-4 9 0s6 4 9 0" opacity=".5"/><path d="M3 7c3-4 6-4 9 0s6 4 9 0" opacity=".5"/></svg>Calm</button>
+    <button data-tab="journal"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Journal</button>
+    <button data-tab="more"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/></svg>More</button>
+  </div>
+</nav>
+
+<div class="overlay" id="panic" hidden></div>
+<div class="overlay alarm" id="alarm" hidden></div>
+
+<script>
+/* ---------- storage ---------- */
+const KEY='stillwater.v1';
+const DEFAULT_VERSES=[
+  {t:"Come unto me, all ye that labour and are heavy laden, and I will give you rest.",r:"Matthew 11:28"},
+  {t:"Peace I leave with you, my peace I give unto you. Let not your heart be troubled, neither let it be afraid.",r:"John 14:27"},
+  {t:"Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.",r:"Philippians 4:6"},
+  {t:"Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee.",r:"Isaiah 41:10"},
+  {t:"Be still, and know that I am God.",r:"Psalm 46:10"},
+  {t:"Casting all your care upon him; for he careth for you.",r:"1 Peter 5:7"}
+];
+function at(daysAhead,h,m){const d=new Date();d.setDate(d.getDate()+daysAhead);d.setHours(h,m,0,0);return d.getTime()}
+function seed(){return{
+  tasks:[
+    {id:uid(),title:"Example: Submit lab record",note:"Tap the box to mark done, or delete this example.",due:at(1,9,0),remind:60,kind:"task",done:false,warned:false,alarmed:false},
+    {id:uid(),title:"Example: Exam starts",note:"Dates get a reminder a day before.",due:at(5,10,0),remind:1440,kind:"date",done:false,warned:false,alarmed:false}
+  ],
+  journal:[], moods:{},
+  habits:{defs:[
+    {id:"sleep",name:"Slept 7+ hours",type:"check"},
+    {id:"water",name:"Water",type:"count",goal:8,unit:"glasses"},
+    {id:"walk",name:"Went for a walk",type:"check"},
+    {id:"screen",name:"Screen time under 3 h",type:"check"}],log:{}},
+  faith:{imgs:[],verses:DEFAULT_VERSES.slice(),pinned:null},
+  focus:{focusMin:25,breakMin:5,log:{}},
+  exams:[],gratitude:[],worries:[],people:[],parked:[],review:{},
+  settings:{prayerOn:false,prayerAM:"07:00",prayerPM:"21:30",windOn:false,windTime:"22:30",lastPrayer:{},lastWind:""}
+}}
+let S;
+function load(){try{const raw=localStorage.getItem(KEY);S=raw?Object.assign(seed(),JSON.parse(raw)):seed()}catch(e){S=seed()}
+  S.settings=Object.assign(seed().settings,S.settings||{});S.settings.lastPrayer=S.settings.lastPrayer||{}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){toast("Couldn't save. Storage may be full; try removing a picture.");return false}}
+function uid(){return Math.random().toString(36).slice(2,10)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function dayKey(d=new Date()){const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
+function fmtWhen(ts){const d=new Date(ts),now=new Date();
+  const t=d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  const dk=dayKey(d), today=dayKey(now), tom=dayKey(new Date(now.getTime()+864e5));
+  if(dk===today)return "Today, "+t; if(dk===tom)return "Tomorrow, "+t;
+  return d.toLocaleDateString([], {weekday:"short",day:"numeric",month:"short"})+", "+t}
+let toastT;
+function toast(msg){let el=document.querySelector(".toast");if(!el){el=document.createElement("div");el.className="toast";el.setAttribute("role","status");document.body.appendChild(el)}
+  el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2600)}
+
+/* ---------- sound & vibration ---------- */
+let AC=null;
+function unlockAudio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume()}catch(e){}}
+document.addEventListener("pointerdown",unlockAudio,{once:false});
+function beep(freq=880,dur=.18,vol=.25){try{if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=freq;o.type="sine";
+  g.gain.setValueAtTime(vol,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+dur);o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+dur)}catch(e){}}
+function chime(){beep(660,.4,.2);setTimeout(()=>beep(880,.6,.2),250)}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+
+/* ---------- routing ---------- */
+const SUB=["focus","habits","faith","backup","exams","insights","people","settings"];
+let view="today";
+function go(v){view=v;stopBreathers();render();window.scrollTo(0,0)}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+
+function render(){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===view||(b.dataset.tab==="more"&&SUB.includes(view))));
+  const app=document.getElementById("app");
+  app.innerHTML=({today:vToday,dates:vDates,tasks:vTasks,calm:vCalm,journal:vJournal,more:vMore,focus:vFocus,habits:vHabits,faith:vFaith,backup:vBackup,exams:vExams,insights:vInsights,people:vPeople,settings:vSettings})[view]();
+  ({today:bToday,dates:bDates,tasks:bTasks,calm:bCalm,journal:bJournal,more:bMore,focus:bFocus,habits:bHabits,faith:bFaith,backup:bBackup,exams:bExams,insights:bInsights,people:bPeople,settings:bSettings})[view]();
+}
+function head(eyebrow,title,sub){return `<header class="top"><span class="eyebrow">${eyebrow}</span><h1>${title}</h1>${sub?`<p class="muted" style="margin:0">${sub}</p>`:""}</header>`}
+function back(){return `<div><button class="ghost small" id="backMore">← More</button></div>`}
+function bindBack(){const b=document.getElementById("backMore");if(b)b.onclick=()=>go("more")}
+
+/* ---------- TODAY ---------- */
+const MOODS=[["Low","#7A8CA8"],["Uneasy","#9C8BB0"],["Okay","#9AA8A4"],["Good","#5FA58C"],["Bright","#D9A440"]];
+function verseOfDay(){const v=S.faith.verses;if(!v.length)return null;const n=Math.floor(Date.now()/864e5);return v[n%v.length]}
+function vToday(){
+  const now=new Date(),h=now.getHours();
+  const greet=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+  const mood=S.moods[dayKey()];
+  const endToday=new Date();endToday.setHours(23,59,59,999);
+  const list=S.tasks.filter(t=>!t.done&&t.due<=endToday.getTime()).sort((a,b)=>a.due-b.due);
+  const upcoming=S.tasks.filter(t=>!t.done&&t.due>endToday.getTime()).sort((a,b)=>a.due-b.due).slice(0,3);
+  const v=verseOfDay();
+  const low=mood!==undefined&&mood<=1&&!fullToday, shown=low?list.slice(0,3):list;
+  const readyW=S.worries.filter(w=>!w.done&&w.at<=Date.now());
+  return `<section class="view">
+  ${head(now.toLocaleDateString([], {weekday:"long",day:"numeric",month:"long"}),greet+".")}
+  <div class="panel"><h3>How are you feeling right now?</h3>
+    <div class="moods">${MOODS.map((m,i)=>`<button data-mood="${i}" class="${mood===i?"on":""}"><i style="background:${m[1]}"></i>${m[0]}</button>`).join("")}</div>
+    <div id="moodNote" class="muted" style="font-size:.88rem">${mood===undefined?"One tap. No need to explain.":mood<=1?"Thanks for being honest. The calm button is always bottom right.":"Noted. Glad you checked in."}</div>
+  </div>
+  ${low?`<div class="panel verse" style="gap:8px"><h3>Low-energy day</h3><p style="font-family:var(--body);font-size:.95rem">Just these few things. That's enough for today.</p><div><button class="small" id="showAll">Show everything</button></div></div>`:""}
+  ${readyW.length?`<div class="panel"><h3>${readyW.length} parked worr${readyW.length>1?"ies are":"y is"} ready to look at</h3><div><button class="small" id="toWorry">Open journal</button></div></div>`:""}
+  ${new Date().getDay()===0?`<div class="panel"><h3>It's Sunday. Your weekly review is ready.</h3><div><button class="small" id="toReview">Open review</button></div></div>`:""}
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3>Due today</h3><button class="small ghost" id="toTasks">All tasks</button></div>
+    ${shown.length?shown.map(taskRow).join(""):`<p class="muted" style="margin:0">Nothing due today. Add something on the Tasks tab.</p>`}
+  </div>
+  ${!low&&upcoming.length?`<div class="panel"><h3>Coming up</h3>${upcoming.map(taskRow).join("")}</div>`:""}
+  ${low?"":`<div class="panel"><div class="row" style="justify-content:space-between"><h3>Small wins today</h3><button class="small ghost" id="toHabits">Edit habits</button></div><div id="habitsHere">${habitsList()}</div></div>`}
+  ${v?`<div class="panel verse"><span class="eyebrow" style="color:var(--gold)">For today</span><p>${esc(v.t)}</p><cite>${esc(v.r)}</cite></div>`:""}
+  </section>`}
+function bToday(){
+  document.querySelectorAll("[data-mood]").forEach(b=>b.onclick=()=>{S.moods[dayKey()]=+b.dataset.mood;save();render()});
+  const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.onclick=fn};
+  on("toTasks",()=>go("tasks"));on("toHabits",()=>go("habits"));on("showAll",()=>{fullToday=true;render()});
+  on("toWorry",()=>go("journal"));on("toReview",()=>go("insights"));
+  bindTaskRows();bindHabits();
+}
+
+/* ---------- TASKS ---------- */
+function taskState(t){const now=Date.now();if(t.done)return["Done",""];if(t.due<now)return["Overdue","over"];
+  if(t.due-now<864e5)return["Soon","soon"];return[t.kind==="date"?"Date":"Upcoming",t.kind==="date"?"date":""]}
+function taskRow(t){const [lab,cls]=taskState(t);
+  return `<div class="task ${t.done?"done":""}" data-id="${t.id}">
+    <button class="check ${t.done?"on":""}" data-act="toggle" aria-label="${t.done?"Mark not done":"Mark done"}"></button>
+    <div style="min-width:0"><div class="t">${esc(t.title)}</div>${t.note?`<div class="n">${esc(t.note)}</div>`:""}
+      <div class="row" style="gap:6px;margin-top:4px"><span class="chip ${cls}">${lab}</span>${t.repeat?`<span class="chip">Repeats ${t.repeat}</span>`:""}<span class="when">${fmtWhen(t.due)}</span></div></div>
+    <button class="small ghost danger" data-act="del" aria-label="Delete">✕</button></div>`}
+function nextDue(ts,rep){const d=new Date(ts);if(rep==="daily")d.setDate(d.getDate()+1);else if(rep==="weekly")d.setDate(d.getDate()+7);else if(rep==="monthly")d.setMonth(d.getMonth()+1);else d.setFullYear(d.getFullYear()+1);return d.getTime()}
+function toggleTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;t.done=!t.done;t.doneAt=t.done?Date.now():null;
+  if(t.done&&t.repeat&&!t.spawned){let n=nextDue(t.due,t.repeat);while(n<Date.now())n=nextDue(n,t.repeat);
+    S.tasks.push({...t,id:uid(),due:n,done:false,doneAt:null,warned:false,alarmed:false,spawned:false});t.spawned=true;toast("Next one set for "+fmtWhen(n))}
+  save()}
+function bindTaskRows(){document.querySelectorAll(".task").forEach(r=>{const id=r.dataset.id;
+  r.querySelector('[data-act="toggle"]').onclick=()=>{toggleTask(id);render()};
+  r.querySelector('[data-act="del"]').onclick=()=>{S.tasks=S.tasks.filter(x=>x.id!==id);save();render();toast("Deleted")}})}
+function vTasks(){
+  let d=new Date(Date.now()+36e5);d.setMinutes(0,0,0);if(prefill)d=new Date(prefill+"T09:00");
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);
+  const open=S.tasks.filter(t=>!t.done).sort((a,b)=>a.due-b.due);
+  const over=open.filter(t=>t.due<Date.now()), up=open.filter(t=>t.due>=Date.now());
+  const done=S.tasks.filter(t=>t.done).sort((a,b)=>b.due-a.due).slice(0,10);
+  return `<section class="view">${head("Tasks & dates","What's on your plate","Reminders ring before each one. If you miss it, the screen alarms until you respond.")}
+  <form class="panel" id="taskForm">
+    <label class="f">What is it?<input type="text" id="tTitle" required placeholder="e.g. Pay hostel fee"></label>
+    <label class="f">Note (optional)<input type="text" id="tNote" placeholder="Details, room number, link…"></label>
+    <div class="row">
+      <label class="f">When<input type="datetime-local" id="tDue" value="${local}" required></label>
+      <label class="f">Remind me<select id="tRemind"><option value="0">At the time</option><option value="10">10 min before</option><option value="30">30 min before</option><option value="60" selected>1 hour before</option><option value="1440">1 day before</option><option value="4320">3 days before</option></select></label>
+      <label class="f">Repeats<select id="tRepeat"><option value="">Doesn't repeat</option><option value="daily">Every day</option><option value="weekly">Every week</option><option value="monthly">Every month</option><option value="yearly">Every year</option></select></label>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <label class="row" style="gap:6px;font-size:.9rem"><input type="checkbox" id="tDate" ${prefill?"checked":""}> It's an important date</label>
+      <button class="primary" type="submit">Add</button></div>
+  </form>
+  ${over.length?`<div class="panel" style="border-color:var(--alert)"><h3 style="color:var(--alert)">Missed (${over.length})</h3>${over.map(taskRow).join("")}</div>`:""}
+  <div class="panel"><h3>Upcoming</h3>${up.length?up.map(taskRow).join(""):`<p class="muted" style="margin:0">All clear.</p>`}</div>
+  ${done.length?`<div class="panel quiet"><h3 class="muted">Recently done</h3>${done.map(taskRow).join("")}</div>`:""}
+  <p class="muted" style="font-size:.82rem;margin:0">Keep this page open (or pinned in a tab) for alarms to fire. Phone-locked alarms and strong vibration come with the Android and iPhone apps.</p>
+  </section>`}
+function bTasks(){
+  if(prefill||prefillTitle){prefill=null;const tt=document.getElementById("tTitle");if(prefillTitle)tt.value=prefillTitle;prefillTitle=null;tt.focus()}
+  document.getElementById("taskForm").onsubmit=e=>{e.preventDefault();
+    const due=new Date(document.getElementById("tDue").value).getTime();if(isNaN(due))return toast("Pick a date and time");
+    S.tasks.push({id:uid(),title:document.getElementById("tTitle").value.trim(),note:document.getElementById("tNote").value.trim(),
+      due,remind:+document.getElementById("tRemind").value,kind:document.getElementById("tDate").checked?"date":"task",repeat:document.getElementById("tRepeat").value,done:false,warned:false,alarmed:false});
+    save();render();toast("Added. You'll be reminded.")};
+  bindTaskRows()}
+
+/* ---------- alarm engine ---------- */
+let alarmLoop=null, alarmQueue=[];
+function checkAlarms(){const now=Date.now();let changed=false;
+  for(const t of S.tasks){if(t.done)continue;
+    if(!t.warned&&t.remind>0&&now>=t.due-t.remind*6e4&&now<t.due){t.warned=true;changed=true;alarmQueue.push({t,type:"soon"})}
+    if(!t.alarmed&&now>=t.due){t.alarmed=true;t.warned=true;changed=true;alarmQueue.push({t,type:now-t.due>6e4?"missed":"now"})}}
+  const st=S.settings,today=dayKey(),hm=v=>{const [h,m]=String(v).split(":").map(Number);const d=new Date();d.setHours(h||0,m||0,0,0);return d.getTime()};
+  if(st.prayerOn)for(const k of ["AM","PM"]){const tt=hm(st["prayer"+k]);if(now>=tt&&now-tt<72e5&&st.lastPrayer[k]!==today){st.lastPrayer[k]=today;changed=true;alarmQueue.push({gentle:"prayer"+k})}}
+  if(st.windOn){const tt=hm(st.windTime);if(now>=tt&&now-tt<72e5&&st.lastWind!==today){st.lastWind=today;changed=true;alarmQueue.push({gentle:"wind"})}}
+  if(changed){save();if(view==="tasks"||view==="today")render()}
+  if(alarmQueue.length&&document.getElementById("alarm").hidden){const a=alarmQueue.shift();a.gentle?showGentle(a.gentle):showAlarm(a)}}
+function showAlarm({t,type}){const el=document.getElementById("alarm");el.className="overlay alarm";
+  const title=type==="soon"?"Coming up":type==="now"?"It's time":"You missed this";
+  el.innerHTML=`<div class="in"><span class="eyebrow">${type==="soon"?"Reminder":"Alarm"}</span><h1>${title}</h1>
+    <div class="big">${esc(t.title)}</div>${t.note?`<p class="muted" style="margin:0">${esc(t.note)}</p>`:""}
+    <p class="when" style="font-size:1rem">${fmtWhen(t.due)}</p>
+    <div class="stack" style="margin-top:12px">
+      ${type!=="soon"?`<button class="primary" id="aDone">Mark done</button>`:""}
+      <button id="aSnooze">Remind me in 10 minutes</button>
+      <button class="ghost" id="aOk">${type==="soon"?"Got it":"Dismiss"}</button></div></div>`;
+  el.classList.toggle("shake",type!=="soon");el.hidden=false;
+  const ring=()=>{if(type==="soon"){chime();buzz([300,150,300])}else{beep(988,.25,.35);setTimeout(()=>beep(740,.25,.35),300);setTimeout(()=>beep(988,.25,.35),600);buzz([900,200,900,200,900])}};
+  ring();clearInterval(alarmLoop);if(type!=="soon")alarmLoop=setInterval(ring,3500);
+  const close=()=>{clearInterval(alarmLoop);buzz(0);el.hidden=true;render();setTimeout(checkAlarms,300)};
+  const d=document.getElementById("aDone");if(d)d.onclick=()=>{const x=S.tasks.find(y=>y.id===t.id);if(x&&!x.done)toggleTask(x.id);close();toast("Nice. Done.")};
+  document.getElementById("aSnooze").onclick=()=>{const x=S.tasks.find(y=>y.id===t.id);if(x){x.due=Math.max(x.due,Date.now())+(type==="soon"?0:0);x.due=Date.now()+10*6e4;x.remind=0;x.alarmed=false;x.warned=true;save()}close();toast("Snoozed for 10 minutes")};
+  document.getElementById("aOk").onclick=close}
+
+/* ---------- breathing ---------- */
+const PATTERNS={box:{name:"Box 4-4-4-4",ph:[["Breathe in",4,1],["Hold",4,1],["Breathe out",4,.45],["Hold",4,.45]]},
+  calm:{name:"4-7-8 to settle",ph:[["Breathe in",4,1],["Hold",7,1],["Breathe out",8,.45]]},
+  easy:{name:"Slow 5-5",ph:[["Breathe in",5,1],["Breathe out",5,.45]]}};
+const breathers=[];
+function stopBreathers(){breathers.forEach(b=>b.stop());breathers.length=0}
+function makeBreather(root,patKey="box"){
+  root.innerHTML=`<div class="breather"><div class="orb-wrap"><div class="orb-ring"></div><div class="orb"></div></div>
+    <div class="phase" aria-live="polite">Ready when you are</div><div class="count">&nbsp;</div>
+    <div class="row" style="justify-content:center"><button class="primary" data-b="go">Start</button>
+    <select data-b="pat" style="width:auto">${Object.entries(PATTERNS).map(([k,p])=>`<option value="${k}" ${k===patKey?"selected":""}>${p.name}</option>`).join("")}</select></div></div>`;
+  const orb=root.querySelector(".orb"),ph=root.querySelector(".phase"),ct=root.querySelector(".count"),btn=root.querySelector('[data-b="go"]'),sel=root.querySelector('[data-b="pat"]');
+  let timers=[],running=false,i=0,cycles=0;
+  function step(){const p=PATTERNS[sel.value].ph[i];orb.style.transitionDuration=p[1]+"s";orb.style.transform=`scale(${p[2]})`;ph.textContent=p[0];
+    if(p[0]==="Breathe in")buzz(60);
+    let left=p[1];ct.textContent=left;
+    const iv=setInterval(()=>{left--;if(left>0)ct.textContent=left},1000);timers.push(iv);
+    timers.push(setTimeout(()=>{clearInterval(iv);i=(i+1)%PATTERNS[sel.value].ph.length;if(i===0){cycles++;ct.textContent=""}if(running)step()},p[1]*1000))}
+  function stop(){running=false;timers.forEach(t=>{clearTimeout(t);clearInterval(t)});timers=[];orb.style.transitionDuration="1s";orb.style.transform="scale(.45)";ph.textContent=cycles?`${cycles} breath${cycles>1?"s":""}. Well done.`:"Ready when you are";ct.innerHTML="&nbsp;";btn.textContent="Start"}
+  btn.onclick=()=>{if(running)return stop();running=true;i=0;cycles=0;btn.textContent="Stop";step()};
+  sel.onchange=()=>{if(running){stop();btn.click()}};
+  const api={stop};breathers.push(api);return api}
+
+/* ---------- grounding ---------- */
+const GROUND=[["5","things you can see","Look around slowly. Name them in your head."],["4","things you can feel","Your feet on the floor, the chair, your sleeves."],["3","things you can hear","Fans, traffic, your own breath."],["2","things you can smell","Or two smells you like, if nothing's around."],["1","thing you can taste","Or take one sip of water."]];
+function groundingHTML(){return `<div class="stack" data-g><div class="dots">${GROUND.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>
+  <div class="ground-step"><b>${GROUND[0][0]}</b> ${GROUND[0][1]}</div><div class="muted" data-gh>${GROUND[0][2]}</div>
+  <div class="row"><button data-gn class="primary">Next</button><button data-gr class="ghost small">Start over</button></div></div>`}
+function bindGrounding(root){const box=root.querySelector("[data-g]");if(!box)return;let i=0;
+  const upd=()=>{if(i>=GROUND.length){box.querySelector(".ground-step").innerHTML="You're here. You're present.";box.querySelector("[data-gh]").textContent="Take one slow breath out.";box.querySelector("[data-gn]").hidden=true;}else{
+    box.querySelector(".ground-step").innerHTML=`<b>${GROUND[i][0]}</b> ${GROUND[i][1]}`;box.querySelector("[data-gh]").textContent=GROUND[i][2];box.querySelector("[data-gn]").hidden=false}
+    box.querySelectorAll(".dots i").forEach((d,k)=>d.classList.toggle("on",k<=i))};
+  box.querySelector("[data-gn]").onclick=()=>{i++;upd()};box.querySelector("[data-gr]").onclick=()=>{i=0;upd()}}
+
+/* ---------- DATES ---------- */
+let calM=new Date();calM.setDate(1);calM.setHours(0,0,0,0);let calSel=dayKey();let prefill=null;let prefillTitle=null;let fullToday=false;
+function sod(ts){const d=new Date(ts);d.setHours(0,0,0,0);return d.getTime()}
+function daysLeft(ts){return Math.round((sod(ts)-sod(Date.now()))/864e5)}
+function urg(n){return n<=2?"u1":n<=7?"u2":n<=30?"u3":"u4"}
+function cdCard(t){const n=daysLeft(t.due),u=urg(n);
+  const num=n<0?`${-n}<small>${n===-1?"day ago":"days ago"}</small>`:n===0?`Today<small>${new Date(t.due).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</small>`:`${n}<small>${n===1?"day left":"days left"}</small>`;
+  const fill=n<0?100:Math.max(6,100-(n/30)*100);
+  return `<div class="cd ${u}"><div class="num ${n===0?"word":""}">${num}</div><div style="min-width:0"><div class="t">${esc(t.title)}</div>
+    <div class="when">${new Date(t.due).toLocaleDateString([], {weekday:"long",day:"numeric",month:"long",year:"numeric"})}</div>
+    <div class="meter" aria-hidden="true"><i style="width:${fill}%"></i></div></div></div>`}
+function vDates(){
+  const y=calM.getFullYear(),m=calM.getMonth();
+  const off=(new Date(y,m,1).getDay()+6)%7, dim=new Date(y,m+1,0).getDate(), cellsN=Math.ceil((off+dim)/7)*7;
+  const byDay={};S.tasks.filter(t=>!t.done).forEach(t=>{(byDay[dayKey(t.due)]=byDay[dayKey(t.due)]||[]).push(t)});
+  let cells="";for(let i=0;i<cellsN;i++){const d=new Date(y,m,1-off+i),k=dayKey(d),items=byDay[k]||[],n=daysLeft(d.getTime());
+    const cls=["day",d.getMonth()!==m?"out":"",n<0?"past":"",n===0?"today":"",k===calSel?"sel":"",items.length?"has "+urg(n):""].join(" ");
+    cells+=`<button class="${cls}" data-day="${k}" aria-label="${d.toDateString()}${items.length?", "+items.length+" planned":""}"><span>${d.getDate()}</span><span class="pips">${items.slice(0,3).map(t=>`<i class="${t.kind==="date"?"star":""}"></i>`).join("")}</span></button>`}
+  const selItems=(byDay[calSel]||[]).sort((a,b)=>a.due-b.due);
+  const selDate=new Date(calSel+"T00:00");
+  const upcoming=S.tasks.filter(t=>!t.done&&daysLeft(t.due)>=0).sort((a,b)=>a.due-b.due);
+  const missed=S.tasks.filter(t=>!t.done&&daysLeft(t.due)<0).length;
+  return `<section class="view">${head("Dates","Your calendar","Shaded days have something planned. The closer it is, the warmer the colour.")}
+  <div class="panel">
+    <div class="cal-head"><button class="small ghost" id="cPrev" aria-label="Previous month">‹</button>
+      <h2>${calM.toLocaleDateString([], {month:"long",year:"numeric"})}</h2>
+      <button class="small ghost" id="cNext" aria-label="Next month">›</button></div>
+    <div class="cal">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>`<div class="dow">${x}</div>`).join("")}${cells}</div>
+    <div class="row" style="justify-content:space-between"><div class="legend"><span class="u1">0–2 days</span><span class="u2">3–7 days</span><span class="u3">8–30 days</span><span class="u4">Later</span></div>
+      <button class="small ghost" id="cToday">Today</button></div>
+  </div>
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3>${selDate.toLocaleDateString([], {weekday:"long",day:"numeric",month:"long"})}</h3><button class="small primary" id="cAdd">Add on this day</button></div>
+    ${selItems.length?selItems.map(taskRow).join(""):`<p class="muted" style="margin:0">Nothing planned. Tap any day to see or add things.</p>`}</div>
+  <div class="panel"><h3>Counting down</h3>${missed?`<p style="margin:0;color:var(--u1);font-size:.9rem;font-weight:600">${missed} missed. They're on the Tasks tab.</p>`:""}
+    ${upcoming.length?upcoming.map(cdCard).join(""):`<p class="muted" style="margin:0">No upcoming dates. Add an exam, a birthday, or a deadline.</p>`}</div>
+  </section>`}
+function bDates(){
+  document.getElementById("cPrev").onclick=()=>{calM.setMonth(calM.getMonth()-1);render()};
+  document.getElementById("cNext").onclick=()=>{calM.setMonth(calM.getMonth()+1);render()};
+  document.getElementById("cToday").onclick=()=>{calM=new Date();calM.setDate(1);calM.setHours(0,0,0,0);calSel=dayKey();render()};
+  document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{calSel=b.dataset.day;const d=new Date(calSel+"T00:00");if(d.getMonth()!==calM.getMonth()){calM=new Date(d.getFullYear(),d.getMonth(),1)}render()});
+  document.getElementById("cAdd").onclick=()=>{prefill=calSel;go("tasks")};
+  bindTaskRows()}
+
+/* ---------- CALM ---------- */
+function vCalm(){return `<section class="view">${head("Calm","Slow it down","When things spike, the big button gives you everything on one screen.")}
+  <button class="primary" id="openPanic" style="padding:18px;border-radius:var(--r);font-size:1.05rem">I'm overwhelmed right now</button>
+  <button id="examCalm" style="padding:14px;border-radius:var(--r)">Before an exam: 3-minute calm routine</button>
+  <div class="panel"><h2>Breathe</h2><div id="calmBreather"></div></div>
+  ${soundsHTML()}
+  <div class="panel"><h2>Ground yourself: 5-4-3-2-1</h2>${groundingHTML()}</div>
+  <div class="panel quiet"><h3>Quick resets</h3><ul style="margin:0;padding-left:18px" class="muted">
+    <li>Splash cool water on your face and wrists.</li><li>Unclench your jaw, drop your shoulders.</li>
+    <li>Write the worry down in Journal, then close it.</li><li>Step outside for two minutes of fresh air.</li></ul></div>
+  </section>`}
+function bCalm(){makeBreather(document.getElementById("calmBreather"));bindGrounding(document.getElementById("app"));document.getElementById("openPanic").onclick=openPanic;document.getElementById("examCalm").onclick=openExamCalm;bindSounds()}
+
+/* panic overlay */
+function openPanic(){unlockAudio();stopBreathers();const el=document.getElementById("panic");
+  const img=S.faith.imgs.find(i=>i.id===S.faith.pinned)||S.faith.imgs[0];
+  const vs=S.faith.verses;const v=vs.length?vs[Math.floor(Math.random()*vs.length)]:null;
+  el.innerHTML=`<div class="in">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">You're safe here</span><button class="small" id="pClose">I'm steadier now</button></div>
+    <h1>This feeling will pass.<br>Breathe with the circle.</h1>
+    <div id="pBreath"></div>
+    ${img?`<img class="panic-img" src="${img.src}" alt="Your saved picture">`:""}
+    ${v?`<div class="panel verse"><p>${esc(v.t)}</p><cite>${esc(v.r)}</cite></div>`:""}
+    <div class="panel"><h3>Then, look around</h3>${groundingHTML()}</div>
+    ${S.people.length?`<div class="panel"><h3>Reach out to someone</h3>${S.people.map(p=>`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:10px"><b style="min-width:0;overflow-wrap:anywhere">${esc(p.name)}</b><span class="row" style="flex:none"><span style="user-select:all;font-variant-numeric:tabular-nums">${esc(p.phone)}</span><a class="pill" href="tel:${esc(String(p.phone).replace(/[^0-9+]/g,""))}">Call</a></span></div>`).join("")}</div>`:""}
+    ${S.gratitude.length?(()=>{const g=S.gratitude[Math.floor(Math.random()*S.gratitude.length)];return `<div class="panel"><span class="eyebrow">Something good you wrote</span><p style="margin:0">${esc(g.t)}</p></div>`})():""}
+    <p class="help">If you feel unsafe or can't cope, please call someone you trust, or Tele MANAS (free, 24×7): <b>14416</b></p>
+  </div>`;
+  el.hidden=false;document.body.style.overflow="hidden";
+  const b=makeBreather(document.getElementById("pBreath"),"easy");el.querySelector('[data-b="go"]').click();
+  bindGrounding(el);
+  document.getElementById("pClose").onclick=()=>{b.stop();el.hidden=true;document.body.style.overflow="";render()}}
+document.getElementById("sosBtn").onclick=openPanic;
+
+/* ---------- JOURNAL ---------- */
+const PROMPTS=["What's taking up the most space in your head right now?","What are you worried will happen? What's more likely to happen?","Name one thing you can control today, and one you can't.","What would you tell a friend who felt like this?","What went better than expected this week?","What are three small things you're grateful for?","What's one thing you can let go of tonight?","If this worry had a size, how big would it be next month?","What do you need right now: rest, help, or a plan?","Write a short prayer or a letter to God about today.","What did you do today that took courage?","What's the smallest next step you can take?"];
+let promptIdx=Math.floor(Math.random()*PROMPTS.length);
+function vJournal(){const ready=S.worries.filter(w=>!w.done&&w.at<=Date.now()),parked=S.worries.filter(w=>!w.done&&w.at>Date.now());let draft="";try{draft=localStorage.getItem(KEY+".draft")||""}catch(e){}
+  return `<section class="view">${head("Journal","Empty your head","Write without fixing anything. Spelling doesn't count here.")}
+  <div class="panel"><div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;gap:12px"><div class="prompt" id="prompt" style="min-width:0">${PROMPTS[promptIdx]}</div><button class="small ghost" id="newPrompt" style="flex:none">New prompt</button></div>
+    <textarea id="jText" placeholder="Start anywhere…">${esc(draft)}</textarea>
+    <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.82rem" id="jCount">${draft.length} characters</span><button class="primary" id="jSave">Save entry</button></div></div>
+  <div class="panel"><h3>Park a worry</h3><p class="muted" style="margin:0;font-size:.88rem">Write it down and pick a time to think about it. Until then, you're allowed to let it rest.</p>
+    <form id="wForm" class="stack"><input type="text" id="wText" placeholder="What's the worry?" required>
+      <div class="row"><select id="wWhen" style="flex:1;min-width:160px"><option value="1">In 1 hour</option><option value="eve" selected>This evening, 7 pm</option><option value="morn">Tomorrow, 9 am</option></select><button class="primary" type="submit">Park it</button></div></form>
+    ${ready.map(w=>`<div class="entry" data-w="${w.id}"><div class="prompt" style="font-size:.95rem">Time to look at this:</div><p>${esc(w.t)}</p><div class="row"><button class="small" data-wa="go">Let it go</button><button class="small" data-wa="task">Make it a task</button><button class="small ghost" data-wa="later">Tomorrow</button></div></div>`).join("")}
+    ${parked.length?`<p class="muted" style="margin:0;font-size:.85rem">${parked.length} parked. ${parked.length>1?"They'll":"It'll"} show here when it's time.</p>`:""}</div>
+  <div class="panel"><h3>Gratitude jar</h3><form id="gForm" class="row" style="flex-wrap:nowrap"><input type="text" id="gText" placeholder="One good thing from today" required><button class="primary" type="submit" style="flex:none">Add</button></form>
+    <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.88rem">${S.gratitude.length} note${S.gratitude.length===1?"":"s"} in your jar</span>${S.gratitude.length?`<button class="small ghost" id="gPick">Show me a good memory</button>`:""}</div><div id="gShow"></div></div>
+  <div class="panel"><h3>Past entries</h3>${S.journal.length?S.journal.slice().reverse().map(e=>`<div class="entry" data-id="${e.id}">
+    <div class="row" style="justify-content:space-between"><span class="when">${new Date(e.at).toLocaleString([], {weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</span><button class="small ghost danger" data-jdel>Delete</button></div>
+    ${e.prompt?`<div class="muted" style="font-size:.85rem;font-style:italic">${esc(e.prompt)}</div>`:""}<p>${esc(e.text)}</p></div>`).join(""):`<p class="muted" style="margin:0">Your saved entries will appear here, newest first. They stay on this device.</p>`}</div>
+  </section>`}
+function bJournal(){const ta=document.getElementById("jText");
+  ta.oninput=()=>{document.getElementById("jCount").textContent=ta.value.length+" characters";try{localStorage.setItem(KEY+".draft",ta.value)}catch(e){}};
+  document.getElementById("newPrompt").onclick=()=>{promptIdx=(promptIdx+1)%PROMPTS.length;document.getElementById("prompt").textContent=PROMPTS[promptIdx]};
+  document.getElementById("jSave").onclick=()=>{const t=ta.value.trim();if(!t)return toast("Write something first");
+    S.journal.push({id:uid(),at:Date.now(),text:t,prompt:PROMPTS[promptIdx]});save();try{localStorage.removeItem(KEY+".draft")}catch(e){}render();toast("Saved. Let it rest now.")};
+  document.querySelectorAll("[data-jdel]").forEach(b=>{b.onclick=()=>{const row=b.closest(".entry");
+    if(row.querySelector(".confirm"))return;const c=document.createElement("div");c.className="confirm";c.innerHTML=`<span>Delete this entry for good?</span><button class="small danger">Delete</button><button class="small ghost">Keep</button>`;
+    row.appendChild(c);const [del,keep]=c.querySelectorAll("button");del.onclick=()=>{S.journal=S.journal.filter(x=>x.id!==row.dataset.id);save();render()};keep.onclick=()=>c.remove()}});
+  bindJournalExtras()}
+function bindJournalExtras(){
+  document.getElementById("gForm").onsubmit=e=>{e.preventDefault();const t=document.getElementById("gText").value.trim();if(!t)return;S.gratitude.push({t,at:Date.now()});save();render();toast("Added to your jar")};
+  const gp=document.getElementById("gPick");if(gp)gp.onclick=()=>{const g=S.gratitude[Math.floor(Math.random()*S.gratitude.length)];
+    document.getElementById("gShow").innerHTML=`<div class="panel verse"><p>${esc(g.t)}</p><cite>${new Date(g.at).toLocaleDateString([], {day:"numeric",month:"long",year:"numeric"})}</cite></div>`};
+  document.getElementById("wForm").onsubmit=e=>{e.preventDefault();const t=document.getElementById("wText").value.trim();if(!t)return;const w=document.getElementById("wWhen").value;let at;const d=new Date();
+    if(w==="1")at=Date.now()+36e5;else if(w==="eve"){d.setHours(19,0,0,0);if(d<new Date())d.setDate(d.getDate()+1);at=d.getTime()}else{d.setDate(d.getDate()+1);d.setHours(9,0,0,0);at=d.getTime()}
+    S.worries.push({id:uid(),t,at,done:false});save();render();toast("Parked until "+fmtWhen(at))};
+  document.querySelectorAll("[data-w]").forEach(r=>r.querySelectorAll("[data-wa]").forEach(b=>b.onclick=()=>{const w=S.worries.find(x=>x.id===r.dataset.w);const a=b.dataset.wa;
+    if(a==="go"){w.done=true;toast("Let go. Well done.")}else if(a==="task"){w.done=true;save();prefillTitle=w.t;return go("tasks")}else{w.at=Date.now()+864e5}
+    save();render()}))}
+
+/* ---------- MORE ---------- */
+function vMore(){return `<section class="view">${head("More","Everything else")}
+  <div class="menu">
+    <button data-go="exams"><b>Exams</b><span>Countdown, syllabus checklist, daily target</span></button>
+    <button data-go="focus"><b>Focus</b><span>Study sessions with breaks and check-ins</span></button>
+    <button data-go="habits"><b>Habits</b><span>Sleep, water, walks, screen time</span></button>
+    <button data-go="insights"><b>Insights</b><span>Mood patterns and weekly review</span></button>
+    <button data-go="faith"><b>Faith corner</b><span>Your pictures and verses</span></button>
+    <button data-go="people"><b>Trusted people</b><span>Shown on your calm screen</span></button>
+    <button data-go="settings"><b>Reminders</b><span>Prayer times, night wind-down</span></button>
+    <button data-go="backup"><b>Backup</b><span>Copy or restore your data</span></button>
+  </div></section>`}
+function bMore(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go))}
+
+/* ---------- FOCUS ---------- */
+const F={mode:"focus",running:false,end:0,remaining:null,iv:null,checkin:false};
+function fmtT(s){s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function fTotal(){return (F.mode==="focus"?S.focus.focusMin:F.mode==="long"?15:S.focus.breakMin)*60}
+function vFocus(){if(F.remaining===null)F.remaining=fTotal();const n=S.focus.log[dayKey()]||0;
+  return `<section class="view">${back()}${head("Focus",F.mode==="focus"?"Study session":"Break time",F.mode==="focus"?"Phone face down. One thing at a time.":"Stand up, stretch, drink some water.")}
+  <div class="panel" style="gap:16px"><div class="timer" id="fTime">${fmtT(F.remaining)}</div><div class="bar"><i id="fBar"></i></div>
+    <div class="row" style="justify-content:center"><button class="primary" id="fGo">${F.running?"Pause":"Start"}</button><button class="ghost" id="fReset">Reset</button>${F.mode!=="focus"?`<button class="ghost" id="fSkip">Skip break</button>`:""}</div>
+    <div id="fCheck"></div></div>
+  <div class="panel"><h3>Park a stray thought</h3><form id="pForm" class="row" style="flex-wrap:nowrap"><input type="text" id="pText" placeholder="e.g. Reply to that message" required><button class="primary" type="submit" style="flex:none">Park</button></form>
+    ${F.running&&F.mode==="focus"?(S.parked.length?`<p class="muted" style="margin:0;font-size:.88rem">${S.parked.length} parked. You'll see them after this session.</p>`:""):S.parked.map((p,i)=>`<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;flex-wrap:nowrap"><span style="min-width:0;overflow-wrap:anywhere">${esc(p)}</span><span class="row" style="flex:none"><button class="small ghost" data-pt="${i}">To task</button><button class="small ghost danger" data-pd="${i}" aria-label="Remove">✕</button></span></div>`).join("")}</div>
+  ${soundsHTML()}
+  <div class="panel"><div class="row">
+    <label class="f">Focus minutes<input type="number" id="fMin" min="5" max="90" value="${S.focus.focusMin}"></label>
+    <label class="f">Break minutes<input type="number" id="bMin" min="1" max="30" value="${S.focus.breakMin}"></label></div>
+    <p class="muted" style="margin:0;font-size:.88rem">Sessions finished today: <b style="color:var(--ink)">${n}</b>. After four, take a longer break. You've earned it.</p></div>
+  </section>`}
+function fTick(){const el=document.getElementById("fTime");if(F.running){F.remaining=(F.end-Date.now())/1000;if(F.remaining<=0)return fDone()}
+  if(el){el.textContent=fmtT(F.remaining);document.getElementById("fBar").style.width=(100-100*F.remaining/fTotal())+"%"}}
+function fDone(){clearInterval(F.iv);F.running=false;chime();buzz([400,150,400]);
+  if(F.mode==="focus"){S.focus.log[dayKey()]=(S.focus.log[dayKey()]||0)+1;save();F.checkin=true;F.remaining=0}
+  else{F.mode="focus";F.remaining=fTotal();toast("Break's over. Ready when you are.")}
+  if(view==="focus")render()}
+function bFocus(){bindBack();
+  const chk=document.getElementById("fCheck");
+  if(F.checkin){chk.innerHTML=`<div class="panel verse" style="gap:10px"><h3>Session done. How are you holding up?</h3>
+    <div class="row"><button data-c="good">Good, keep going</button><button data-c="tired">A bit tired</button><button data-c="drained">Drained</button></div></div>`;
+    chk.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const c=b.dataset.c;F.checkin=false;
+      F.mode=c==="drained"||(S.focus.log[dayKey()]%4===0)?"long":"break";F.remaining=fTotal();
+      toast(c==="drained"?"Taking a 15-minute break. Rest counts as progress.":c==="tired"?"Take the break fully. Step away from the screen.":"Great. Short break, then back to it.");
+      F.running=true;F.end=Date.now()+F.remaining*1000;clearInterval(F.iv);F.iv=setInterval(fTick,500);render()})}
+  document.getElementById("fGo").onclick=()=>{unlockAudio();if(F.checkin)return;
+    if(F.running){F.running=false;clearInterval(F.iv)}else{F.running=true;F.end=Date.now()+F.remaining*1000;clearInterval(F.iv);F.iv=setInterval(fTick,500)}render()};
+  document.getElementById("fReset").onclick=()=>{clearInterval(F.iv);F.running=false;F.mode="focus";F.checkin=false;F.remaining=fTotal();render()};
+  const sk=document.getElementById("fSkip");if(sk)sk.onclick=()=>{clearInterval(F.iv);F.running=false;F.mode="focus";F.remaining=fTotal();render()};
+  const setMin=()=>{S.focus.focusMin=Math.min(90,Math.max(5,+document.getElementById("fMin").value||25));S.focus.breakMin=Math.min(30,Math.max(1,+document.getElementById("bMin").value||5));save();if(!F.running&&!F.checkin){F.remaining=fTotal();fTick()}};
+  document.getElementById("fMin").onchange=setMin;document.getElementById("bMin").onchange=setMin;fTick();bindSounds();bindParking()}
+function bindParking(){document.getElementById("pForm").onsubmit=e=>{e.preventDefault();const t=document.getElementById("pText").value.trim();if(!t)return;S.parked.push(t);save();render();toast("Parked. Back to focus.")};
+  document.querySelectorAll("[data-pd]").forEach(b=>b.onclick=()=>{S.parked.splice(+b.dataset.pd,1);save();render()});
+  document.querySelectorAll("[data-pt]").forEach(b=>b.onclick=()=>{const t=S.parked.splice(+b.dataset.pt,1)[0];save();prefillTitle=t;go("tasks")})}
+
+/* ---------- HABITS ---------- */
+function hVal(id,dk=dayKey()){return (S.habits.log[dk]||{})[id]}
+function hDone(h,dk){const v=hVal(h.id,dk);return h.type==="count"?(v||0)>=h.goal:!!v}
+function streak(h){let n=0,d=new Date();if(!hDone(h,dayKey(d)))d.setDate(d.getDate()-1);while(hDone(h,dayKey(d))){n++;d.setDate(d.getDate()-1)}return n}
+function week(h){let s="";for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);s+=`<i class="${hDone(h,dayKey(d))?"on":""}" title="${d.toLocaleDateString([], {weekday:"short"})}"></i>`}return s}
+function habitsList(edit){return S.habits.defs.map(h=>{const v=hVal(h.id),st=streak(h);
+  const ctl=h.type==="count"?`<div class="counter"><button data-h="${h.id}" data-d="-1" aria-label="Less">−</button><b>${v||0}/${h.goal}</b><button data-h="${h.id}" data-d="1" aria-label="More">+</button></div>`
+    :`<button class="check ${v?"on":""}" data-h="${h.id}" aria-label="Toggle ${esc(h.name)}"></button>`;
+  return `<div class="habit">${h.type==="count"?`<span></span>`:ctl}<div style="min-width:0"><div style="font-weight:600">${esc(h.name)}${h.type==="count"?` <span class="muted" style="font-weight:400">(${h.unit})</span>`:""}</div>
+    <div class="row" style="gap:8px"><div class="week">${week(h)}</div><span class="when">${st?st+" day streak":"Start today"}</span></div></div>
+    ${h.type==="count"?ctl:edit?`<button class="small ghost danger" data-hdel="${h.id}">Remove</button>`:"<span></span>"}</div>`}).join("")}
+function bindHabits(){document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{const id=b.dataset.h,dk=dayKey();S.habits.log[dk]=S.habits.log[dk]||{};
+  const h=S.habits.defs.find(x=>x.id===id);
+  if(h.type==="count"){S.habits.log[dk][id]=Math.max(0,(S.habits.log[dk][id]||0)+(+b.dataset.d));if(S.habits.log[dk][id]===h.goal)toast("Goal reached. Well done.")}
+  else{S.habits.log[dk][id]=!S.habits.log[dk][id];if(S.habits.log[dk][id])beep(1046,.12,.12)}
+  save();render()});
+  document.querySelectorAll("[data-hdel]").forEach(b=>b.onclick=()=>{S.habits.defs=S.habits.defs.filter(h=>h.id!==b.dataset.hdel);save();render()})}
+function vHabits(){return `<section class="view">${back()}${head("Habits","Tiny wins","Each dot is a day. Green means done. Missing a day is fine; just come back.")}
+  <div class="panel">${habitsList(true)}</div>
+  <form class="panel" id="hForm"><h3>Add a habit</h3><div class="row"><label class="f">Name<input type="text" id="hName" placeholder="e.g. Read 10 pages" required></label></div>
+  <div class="row" style="justify-content:flex-end"><button class="primary" type="submit">Add habit</button></div></form></section>`}
+function bHabits(){bindBack();bindHabits();document.getElementById("hForm").onsubmit=e=>{e.preventDefault();const n=document.getElementById("hName").value.trim();if(!n)return;
+  S.habits.defs.push({id:uid(),name:n,type:"check"});save();render();toast("Habit added")}}
+
+/* ---------- FAITH ---------- */
+function vFaith(){return `<section class="view">${back()}${head("Faith corner","Peace for your heart","Add pictures that bring you peace. The starred one shows on your calm screen.")}
+  <div class="panel"><div class="row" style="justify-content:space-between"><h3>Pictures</h3><label class="row" style="cursor:pointer"><span class="primary" style="background:var(--calm);color:var(--bg);border-radius:999px;padding:8px 14px;font-weight:600">Add pictures</span><input type="file" id="fImg" accept="image/*" multiple hidden></label></div>
+    ${S.faith.imgs.length?`<div class="gallery">${S.faith.imgs.map(i=>`<figure class="${S.faith.pinned===i.id?"pinned":""}" data-id="${i.id}"><img src="${i.src}" alt="Saved picture"><button class="small pin" data-pin aria-label="Show on calm screen">${S.faith.pinned===i.id?"★":"☆"}</button><button class="small danger" data-idel aria-label="Remove">✕</button></figure>`).join("")}</div>`
+    :`<div class="panel quiet" style="align-items:center;text-align:center"><p class="muted" style="margin:0">No pictures yet. Add a picture of Christ, a church you love, or anything that calms you. They stay on this device.</p></div>`}</div>
+  <div class="panel"><h3>Verses & prayers</h3>
+    ${S.faith.verses.map((v,i)=>`<div class="entry"><p style="font-family:var(--display)">${esc(v.t)}</p><div class="row" style="justify-content:space-between"><span class="chip date">${esc(v.r||"Prayer")}</span><button class="small ghost danger" data-vdel="${i}">Remove</button></div></div>`).join("")}
+    <form id="vForm" class="stack" style="border-top:1px solid var(--line);padding-top:12px"><label class="f">Verse or prayer<textarea id="vText" style="min-height:80px" required placeholder="Type a verse or a short prayer"></textarea></label>
+    <div class="row"><label class="f">Reference<input type="text" id="vRef" placeholder="e.g. Psalm 23:1"></label><button class="primary" type="submit" style="align-self:flex-end">Add</button></div></form></div>
+  </section>`}
+function shrink(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=900,s=Math.min(1,m/Math.max(im.width,im.height));
+  const c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.78))};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+function bFaith(){bindBack();
+  document.getElementById("fImg").onchange=async e=>{for(const f of e.target.files){try{const src=await shrink(f);const id=uid();S.faith.imgs.push({id,src});if(!S.faith.pinned)S.faith.pinned=id;
+    if(!save()){S.faith.imgs.pop();break}}catch(err){toast("Couldn't read that picture")}}render()};
+  document.querySelectorAll(".gallery figure").forEach(f=>{const id=f.dataset.id;
+    f.querySelector("[data-pin]").onclick=()=>{S.faith.pinned=id;save();render();toast("Shown on your calm screen")};
+    f.querySelector("[data-idel]").onclick=()=>{S.faith.imgs=S.faith.imgs.filter(i=>i.id!==id);if(S.faith.pinned===id)S.faith.pinned=S.faith.imgs[0]?.id||null;save();render()}});
+  document.querySelectorAll("[data-vdel]").forEach(b=>b.onclick=()=>{S.faith.verses.splice(+b.dataset.vdel,1);save();render()});
+  document.getElementById("vForm").onsubmit=e=>{e.preventDefault();S.faith.verses.push({t:document.getElementById("vText").value.trim(),r:document.getElementById("vRef").value.trim()});save();render();toast("Added")}}
+
+/* ---------- BACKUP ---------- */
+function vBackup(){return `<section class="view">${back()}${head("Backup","Keep your data safe","Everything lives only in this browser. Copy a backup now and then, and paste it into a note or email to yourself.")}
+  <div class="panel"><h3>Make a backup</h3><button class="primary" id="bCopy">Copy backup to clipboard</button><textarea id="bOut" readonly style="min-height:90px;font-size:.75rem"></textarea></div>
+  <div class="panel"><h3>Restore</h3><textarea id="bIn" placeholder="Paste a backup here" style="min-height:90px;font-size:.75rem"></textarea><div id="bConfirm"></div><button id="bRestore">Restore from backup</button></div></section>`}
+function bBackup(){bindBack();const out=document.getElementById("bOut");out.value=JSON.stringify(S);
+  document.getElementById("bCopy").onclick=async()=>{try{await navigator.clipboard.writeText(out.value);toast("Backup copied")}catch(e){out.focus();out.select();toast("Selected. Copy it manually.")}};
+  document.getElementById("bRestore").onclick=()=>{let data;try{data=JSON.parse(document.getElementById("bIn").value);if(!data.tasks||!data.habits)throw 0}catch(e){return toast("That doesn't look like a Stillwater backup")}
+    const c=document.getElementById("bConfirm");c.innerHTML=`<div class="confirm"><span>This replaces everything currently here.</span><button class="small danger" id="bYes">Replace</button><button class="small ghost" id="bNo">Cancel</button></div>`;
+    document.getElementById("bYes").onclick=()=>{S=data;save();toast("Restored");go("today")};document.getElementById("bNo").onclick=()=>c.innerHTML=""}}
+
+/* ---------- SOUNDS ---------- */
+const SND={nodes:null,kind:null,out:null};
+function noise(brown){const len=AC.sampleRate*6,b=AC.createBuffer(1,len,AC.sampleRate),d=b.getChannelData(0);let last=0;
+  for(let i=0;i<len;i++){const w=Math.random()*2-1;if(brown){last=(last+.02*w)/1.02;d[i]=last*3.5}else d[i]=w}return b}
+function playSound(kind){stopSound();unlockAudio();if(!AC)return;
+  const out=AC.createGain();out.gain.setValueAtTime(0,AC.currentTime);out.gain.linearRampToValueAtTime(.6,AC.currentTime+1.5);out.connect(AC.destination);const nodes=[out];
+  if(kind==="rain"){const src=AC.createBufferSource();src.buffer=noise(false);src.loop=true;const hp=AC.createBiquadFilter();hp.type="highpass";hp.frequency.value=900;
+    const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=5500;const g=AC.createGain();g.gain.value=.16;src.connect(hp).connect(lp).connect(g).connect(out);src.start();nodes.push(src)}
+  if(kind==="ocean"){const src=AC.createBufferSource();src.buffer=noise(true);src.loop=true;const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=650;
+    const g=AC.createGain();g.gain.value=.32;const lfo=AC.createOscillator();lfo.frequency.value=.09;const lg=AC.createGain();lg.gain.value=.26;lfo.connect(lg).connect(g.gain);
+    src.connect(lp).connect(g).connect(out);src.start();lfo.start();nodes.push(src,lfo)}
+  if(kind==="hum"){[110,164.81,220,329.63].forEach((fr,i)=>{const o=AC.createOscillator();o.type="sine";o.frequency.value=fr;const g=AC.createGain();g.gain.value=.07/(i+1);
+    const l=AC.createOscillator();l.frequency.value=.05+i*.03;const lg=AC.createGain();lg.gain.value=.025/(i+1);l.connect(lg).connect(g.gain);o.connect(g).connect(out);o.start();l.start();nodes.push(o,l)})}
+  SND.nodes=nodes;SND.kind=kind;SND.out=out}
+function stopSound(){if(!SND.nodes)return;const ns=SND.nodes,o=SND.out;
+  try{o.gain.cancelScheduledValues(AC.currentTime);o.gain.setValueAtTime(o.gain.value,AC.currentTime);o.gain.linearRampToValueAtTime(0,AC.currentTime+.6)}catch(e){}
+  setTimeout(()=>ns.forEach(n=>{try{n.stop&&n.stop()}catch(e){}try{n.disconnect()}catch(e){}}),700);SND.nodes=null;SND.kind=null}
+function soundsHTML(){const k=SND.kind;return `<div class="panel"><h3>Calming sounds</h3><div class="row">${[["rain","Rain"],["ocean","Ocean"],["hum","Soft tones"]].map(([id,l])=>`<button class="small ${k===id?"primary":""}" data-snd="${id}">${l}</button>`).join("")}<button class="small ghost" data-snd="off">Stop</button></div>
+  <p class="muted" style="margin:0;font-size:.82rem">Keeps playing while you move around the app.</p></div>`}
+function bindSounds(){document.querySelectorAll("[data-snd]").forEach(b=>b.onclick=()=>{const k=b.dataset.snd;if(k==="off"||SND.kind===k)stopSound();else playSound(k);
+  document.querySelectorAll("[data-snd]").forEach(x=>{if(x.dataset.snd!=="off")x.classList.toggle("primary",x.dataset.snd===SND.kind)})})}
+
+/* ---------- EXAM CALM ROUTINE ---------- */
+function openExamCalm(){unlockAudio();stopBreathers();const el=document.getElementById("panic");let step=0;
+  const vs=S.faith.verses,v=vs.find(x=>/41:10/.test(x.r))||vs[0];
+  const close=()=>{stopBreathers();el.hidden=true;document.body.style.overflow="";render()};
+  const draw=()=>{stopBreathers();const st=[
+    ["Step 1 of 3","Breathe slowly for one minute",`<div id="eBreath"></div>`],
+    ["Step 2 of 3","Hold onto this",v?`<div class="panel verse"><p>${esc(v.t)}</p><cite>${esc(v.r)}</cite></div>`:`<p>You are not alone in that room.</p>`],
+    ["Step 3 of 3","You've prepared. Trust it.",`<div class="panel"><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px"><li>Read each question twice before you write.</li><li>Start with one you know. Momentum helps.</li><li>If your mind goes blank, put the pen down, breathe out slowly, and move to the next question.</li><li>One question at a time. That's all you have to do.</li></ul></div>`]][step];
+    el.innerHTML=`<div class="in"><div class="row" style="justify-content:space-between"><span class="eyebrow">${st[0]}</span><button class="small ghost" id="eClose">Close</button></div><h1>${st[1]}</h1>${st[2]}<button class="primary" id="eNext">${step<2?"Next":"I'm ready"}</button></div>`;
+    if(step===0){makeBreather(document.getElementById("eBreath"),"easy");el.querySelector('[data-b="go"]').click()}
+    document.getElementById("eNext").onclick=()=>{if(step<2){step++;draw()}else close()};document.getElementById("eClose").onclick=close};
+  el.hidden=false;document.body.style.overflow="hidden";draw()}
+
+/* ---------- GENTLE REMINDERS ---------- */
+function showGentle(kind){const el=document.getElementById("alarm");el.className="overlay";
+  const vs=S.faith.verses,v=vs.length?vs[Math.floor(Math.random()*vs.length)]:null;let body;
+  if(kind==="wind"){const tm=new Date();tm.setDate(tm.getDate()+1);tm.setHours(23,59,59,999);
+    const top=S.tasks.filter(t=>!t.done&&t.due<=tm.getTime()).sort((a,b)=>a.due-b.due).slice(0,3);
+    body=`<span class="eyebrow">Night wind-down</span><h1>Time to rest.</h1>
+      <div class="panel"><h3>Tomorrow's top ${top.length||3}</h3>${top.length?top.map(t=>`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:10px"><span style="min-width:0;overflow-wrap:anywhere">${esc(t.title)}</span><span class="when" style="flex:none">${fmtWhen(t.due)}</span></div>`).join(""):`<p class="muted" style="margin:0">Nothing urgent. A light day ahead.</p>`}</div>
+      <div class="panel verse"><p>Lord, thank you for today. I leave what I didn't finish in your hands. Watch over me and give me rest. Amen.</p></div>
+      <p class="muted" style="margin:0">Try charging your phone across the room tonight.</p><button class="primary" id="gOk">Goodnight</button>`}
+  else{const am=kind==="prayerAM";
+    body=`<span class="eyebrow">${am?"Morning":"Night"} prayer</span><h1>A quiet moment with God.</h1>${v?`<div class="panel verse"><p>${esc(v.t)}</p><cite>${esc(v.r)}</cite></div>`:""}
+      <p class="prompt" style="margin:0">${am?"What's one thing you want to ask His help with today?":"What's one thing from today you can thank Him for?"}</p><button class="primary" id="gOk">Amen</button>`}
+  el.innerHTML=`<div class="in">${body}</div>`;el.hidden=false;chime();buzz([200,100,200]);
+  document.getElementById("gOk").onclick=()=>{el.hidden=true;setTimeout(checkAlarms,300)}}
+
+/* ---------- EXAMS ---------- */
+function examCard(x){const n=daysLeft(x.date),u=urg(Math.max(0,n)),tot=x.chapters.length,dn=x.chapters.filter(c=>c.done).length,rem=tot-dn,target=n>0&&rem?Math.ceil(rem/n):0;
+  return `<div class="panel" data-x="${x.id}"><div class="cd ${u}"><div class="num ${n<=0?"word":""}">${n<0?"Done":n===0?"Today":n}${n>0?`<small>${n===1?"day left":"days left"}</small>`:""}</div>
+    <div style="min-width:0"><div class="t">${esc(x.name)}</div><div class="when">${new Date(x.date).toLocaleDateString([], {weekday:"long",day:"numeric",month:"long"})}</div>
+    ${tot?`<div class="meter"><i style="width:${dn/tot*100}%"></i></div><div class="when" style="margin-top:4px">${dn} of ${tot} covered</div>`:""}</div></div>
+    ${n>0&&rem?`<p style="margin:0;font-weight:600">Today's target: about ${target} topic${target>1?"s":""}.</p>`:n>=0&&tot&&!rem?`<p style="margin:0;font-weight:600;color:var(--ok)">Syllabus covered. Revise and rest well.</p>`:""}
+    ${x.chapters.map((c,i)=>`<div class="habit"><button class="check ${c.done?"on":""}" data-xc="${i}" aria-label="Toggle ${esc(c.t)}"></button><div style="min-width:0;overflow-wrap:anywhere;${c.done?"text-decoration:line-through;color:var(--muted)":""}">${esc(c.t)}</div><span></span></div>`).join("")}
+    <div class="row"><button class="small" data-xcalm>Calm routine</button><button class="small ghost danger" data-xdel>Delete exam</button></div><div data-xconf></div></div>`}
+function vExams(){const ex=S.exams.slice().sort((a,b)=>a.date-b.date);
+  return `<section class="view">${back()}${head("Exams","Exam mode","Countdown, syllabus checklist and a daily target, so you always know what's next.")}
+  ${ex.map(examCard).join("")}
+  <form class="panel" id="xForm"><h3>Add an exam</h3><div class="row"><label class="f">Subject<input type="text" id="xName" required placeholder="e.g. Maths end-sem"></label><label class="f">Date<input type="date" id="xDate" required></label></div>
+    <label class="f">Chapters or topics, one per line<textarea id="xCh" style="min-height:100px" placeholder="Unit 1&#10;Unit 2&#10;Unit 3"></textarea></label>
+    <div class="row" style="justify-content:space-between"><label class="row" style="gap:6px;font-size:.9rem"><input type="checkbox" id="xRem" checked> Add to my dates with a reminder</label><button class="primary" type="submit">Add exam</button></div></form></section>`}
+function bExams(){bindBack();
+  document.getElementById("xForm").onsubmit=e=>{e.preventDefault();const name=document.getElementById("xName").value.trim(),dv=document.getElementById("xDate").value;if(!name||!dv)return;
+    const date=new Date(dv+"T09:00").getTime(),chapters=document.getElementById("xCh").value.split("\n").map(s=>s.trim()).filter(Boolean).map(t=>({t,done:false}));
+    const x={id:uid(),name,date,chapters,taskId:null};
+    if(document.getElementById("xRem").checked){const t={id:uid(),title:"Exam: "+name,note:"",due:date,remind:1440,kind:"date",repeat:"",done:false,warned:false,alarmed:false};S.tasks.push(t);x.taskId=t.id}
+    S.exams.push(x);save();render();toast("Exam added")};
+  document.querySelectorAll("[data-x]").forEach(p=>{const x=S.exams.find(q=>q.id===p.dataset.x);
+    p.querySelectorAll("[data-xc]").forEach(b=>b.onclick=()=>{const c=x.chapters[+b.dataset.xc];c.done=!c.done;save();render()});
+    p.querySelector("[data-xcalm]").onclick=openExamCalm;
+    p.querySelector("[data-xdel]").onclick=()=>{const c=p.querySelector("[data-xconf]");c.innerHTML=`<div class="confirm"><span>Delete this exam and its checklist?</span><button class="small danger">Delete</button><button class="small ghost">Keep</button></div>`;
+      const [d,k]=c.querySelectorAll("button");d.onclick=()=>{S.exams=S.exams.filter(q=>q.id!==x.id);if(x.taskId)S.tasks=S.tasks.filter(t=>t.id!==x.taskId);save();render()};k.onclick=()=>c.innerHTML=""}})}
+
+/* ---------- INSIGHTS ---------- */
+function weekStart(){const w=new Date();w.setHours(0,0,0,0);w.setDate(w.getDate()-((w.getDay()+6)%7));return w}
+function vInsights(){
+  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
+  const sleepDef=S.habits.defs.find(h=>h.id==="sleep"),water=S.habits.defs.find(h=>h.id==="water");
+  const lab=d=>"MTWTFSS"[(d.getDay()+6)%7];
+  const row=(name,fn)=>`<span class="lab">${name}</span>${days.map(fn).join("")}`;
+  const grid=`<div style="overflow-x:auto"><div class="ins"><span></span>${days.map(d=>`<span class="dl">${lab(d)}</span>`).join("")}
+    ${row("Mood",d=>{const m=S.moods[dayKey(d)];return `<i style="${m===undefined?"":`background:${MOODS[m][1]};border-color:${MOODS[m][1]}`}" title="${m===undefined?"No check-in":MOODS[m][0]}"></i>`})}
+    ${sleepDef?row("Slept 7+",d=>`<i class="${hDone(sleepDef,dayKey(d))?"on":""}"></i>`):""}
+    ${water?row("Water",d=>`<i class="${hDone(water,dayKey(d))?"on":""}"></i>`):""}
+    ${row("Focus",d=>{const n=S.focus.log[dayKey(d)]||0;return `<i class="${n?"on":""}" style="${n?`opacity:${Math.min(1,.35+n*.2)}`:""}" title="${n} sessions"></i>`})}</div></div>`;
+  let msg="Check in daily for a week or two and patterns will show up here.";
+  if(sleepDef){const a=[],b=[];days.forEach(d=>{const m=S.moods[dayKey(d)];if(m===undefined)return;(hDone(sleepDef,dayKey(d))?a:b).push(m)});
+    if(a.length>=2&&b.length>=2){const av=x=>x.reduce((s,y)=>s+y,0)/x.length,A=av(a),B=av(b),w=val=>MOODS[Math.round(val)][0].toLowerCase();
+      msg=Math.abs(A-B)<.4?`Your mood is about the same whether or not you slept 7+ hours (mostly "${w(A)}").`:A>B?`On days with 7+ hours of sleep your mood averaged "${w(A)}", versus "${w(B)}" on shorter nights. Sleep seems to matter for you.`:`Your mood was "${w(A)}" after full nights and "${w(B)}" after short ones, so something other than sleep may be driving it.`}}
+  const wk=weekStart(),ws=wk.getTime(),wkKey=dayKey(wk);
+  const doneN=S.tasks.filter(t=>t.done&&t.doneAt>=ws).length,jN=S.journal.filter(x=>x.at>=ws).length,gN=S.gratitude.filter(g=>g.at>=ws).length;
+  let fN=0;for(let d=new Date(wk);d<=new Date();d.setDate(d.getDate()+1))fN+=S.focus.log[dayKey(d)]||0;
+  const best=S.habits.defs.map(h=>[h,streak(h)]).sort((a,b)=>b[1]-a[1])[0];
+  return `<section class="view">${back()}${head("Insights","Your patterns","The last two weeks at a glance, and a look back at this week.")}
+  <div class="panel"><h3>Last 14 days</h3>${grid}
+    <div class="row" style="gap:10px">${MOODS.map(m=>`<span class="row" style="gap:4px;font-size:.75rem;color:var(--muted)"><i style="width:10px;height:10px;border-radius:3px;background:${m[1]};display:inline-block"></i>${m[0]}</span>`).join("")}</div>
+    <p class="prompt" style="margin:0">${msg}</p></div>
+  <div class="panel"><h2>This week</h2><div class="stats"><div class="stat"><b>${doneN}</b><span>tasks done</span></div><div class="stat"><b>${fN}</b><span>focus sessions</span></div><div class="stat"><b>${jN}</b><span>journal entries</span></div><div class="stat"><b>${gN}</b><span>gratitude notes</span></div></div>
+    ${best&&best[1]?`<p style="margin:0">Longest streak right now: <b>${esc(best[0].name)}</b>, ${best[1]} day${best[1]>1?"s":""}.</p>`:""}
+    <label class="f">What do you want next week to feel like?<textarea id="rText" style="min-height:80px">${esc(S.review[wkKey]||"")}</textarea></label></div></section>`}
+function bInsights(){bindBack();document.getElementById("rText").oninput=e=>{S.review[dayKey(weekStart())]=e.target.value;save()}}
+
+/* ---------- PEOPLE ---------- */
+function vPeople(){return `<section class="view">${back()}${head("Trusted people","Who you can reach","They show up on your calm screen, so help is one glance away.")}
+  <div class="panel">${S.people.length?S.people.map((p,i)=>`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;${i?"border-top:1px solid var(--line);padding-top:10px":""}"><div style="min-width:0"><div style="font-weight:600;overflow-wrap:anywhere">${esc(p.name)}</div><div class="when" style="user-select:all">${esc(p.phone)}</div></div><button class="small ghost danger" data-pdel="${i}" style="flex:none">Remove</button></div>`).join(""):`<p class="muted" style="margin:0">Add a friend, family member, mentor or pastor you trust.</p>`}</div>
+  <form class="panel" id="peForm"><h3>Add someone</h3><div class="row"><label class="f">Name<input type="text" id="peName" required></label><label class="f">Phone<input type="text" id="pePhone" inputmode="tel" required></label></div>
+    <div class="row" style="justify-content:flex-end"><button class="primary" type="submit">Add</button></div></form></section>`}
+function bPeople(){bindBack();
+  document.getElementById("peForm").onsubmit=e=>{e.preventDefault();const name=document.getElementById("peName").value.trim(),phone=document.getElementById("pePhone").value.trim();if(!name||!phone)return;S.people.push({name,phone});save();render();toast("Added")};
+  document.querySelectorAll("[data-pdel]").forEach(b=>b.onclick=()=>{S.people.splice(+b.dataset.pdel,1);save();render()})}
+
+/* ---------- REMINDER SETTINGS ---------- */
+function vSettings(){const s=S.settings;return `<section class="view">${back()}${head("Reminders","Gentle nudges","Prayer times and a night wind-down. They appear while the app is open.")}
+  <div class="panel"><label class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px"><span><b>Daily prayer reminder</b><br><span class="muted" style="font-size:.85rem">A verse and a quiet moment, morning and night</span></span><input type="checkbox" id="sPr" ${s.prayerOn?"checked":""} style="width:22px;height:22px;flex:none"></label>
+    <div class="row"><label class="f">Morning<input type="time" id="sAM" value="${s.prayerAM}"></label><label class="f">Night<input type="time" id="sPM" value="${s.prayerPM}"></label></div><div><button class="small ghost" id="tPr">Preview</button></div></div>
+  <div class="panel"><label class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px"><span><b>Night wind-down</b><br><span class="muted" style="font-size:.85rem">Tomorrow's top 3, a short prayer, and goodnight</span></span><input type="checkbox" id="sWd" ${s.windOn?"checked":""} style="width:22px;height:22px;flex:none"></label>
+    <div class="row"><label class="f">Time<input type="time" id="sWt" value="${s.windTime}"></label></div><div><button class="small ghost" id="tWd">Preview</button></div></div>
+  <div class="panel"><h3>Test the alarm</h3><p class="muted" style="margin:0;font-size:.88rem">See and hear what a missed-task alarm looks like. Turn your volume up first.</p><div><button class="small" id="tAl">Play test alarm</button></div></div></section>`}
+function bSettings(){bindBack();const s=S.settings;
+  const sv=()=>{s.prayerOn=document.getElementById("sPr").checked;s.prayerAM=document.getElementById("sAM").value||"07:00";s.prayerPM=document.getElementById("sPM").value||"21:30";
+    s.windOn=document.getElementById("sWd").checked;s.windTime=document.getElementById("sWt").value||"22:30";save();toast("Saved")};
+  ["sPr","sAM","sPM","sWd","sWt"].forEach(id=>document.getElementById(id).onchange=sv);
+  document.getElementById("tPr").onclick=()=>{unlockAudio();showGentle(new Date().getHours()<12?"prayerAM":"prayerPM")};
+  document.getElementById("tWd").onclick=()=>{unlockAudio();showGentle("wind")};
+  document.getElementById("tAl").onclick=()=>{unlockAudio();showAlarm({t:{id:"test",title:"Test alarm",note:"This is what a missed task looks like.",due:Date.now()-12e4},type:"missed"})}}
+
+/* ---------- boot ---------- */
+load();
+const start=location.hash.slice(1);
+go(["today","dates","tasks","calm","journal","more",...SUB].includes(start)?start:"today");
+setInterval(checkAlarms,15000);setTimeout(checkAlarms,1500);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkAlarms()});
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+if("Notification" in window&&Notification.permission==="default"){document.addEventListener("click",()=>{try{Notification.requestPermission()}catch(e){}},{once:true})}</script>
+</body>
+</html>
